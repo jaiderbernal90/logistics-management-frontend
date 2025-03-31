@@ -1,29 +1,22 @@
 import {
   ShipmentAction,
   ShipmentStateCtx,
-} from "../interfaces/shipment.interface";
+} from "../../interfaces/shipment.interface";
 
 export const initialState: ShipmentStateCtx = {
   shipments: [],
   shipmentsAdmin: [],
   selectedShipment: null,
-  routes: [],
-  transporters: [],
   shipmentHistory: null,
   isLoading: false,
   error: null,
 };
 
-const shipmentReducer = (
+export const shipmentReducer = (
   state: ShipmentStateCtx,
   action: ShipmentAction
 ): ShipmentStateCtx => {
   switch (action.type) {
-    case "FETCH_SHIPMENTS_START":
-    case "CREATE_SHIPMENT_START":
-    case "ASSIGN_ROUTE_START":
-      return { ...state, isLoading: true, error: null };
-
     case "FETCH_SHIPMENTS_SUCCESS":
       return {
         ...state,
@@ -31,7 +24,6 @@ const shipmentReducer = (
         isLoading: false,
         error: null,
       };
-
     case "FETCH_ALL_SHIPMENTS_SUCCESS":
       return {
         ...state,
@@ -39,7 +31,6 @@ const shipmentReducer = (
         isLoading: false,
         error: null,
       };
-
     case "FETCH_HISTORY_SHIPMENTS_SUCCESS":
       return {
         ...state,
@@ -47,7 +38,6 @@ const shipmentReducer = (
         isLoading: false,
         error: null,
       };
-
     case "CREATE_SHIPMENT_SUCCESS":
       return {
         ...state,
@@ -56,9 +46,14 @@ const shipmentReducer = (
         isLoading: false,
         error: null,
       };
-
-    case "FETCH_SHIPMENTS_FAILURE":
     case "CREATE_SHIPMENT_FAILURE":
+      return {
+        ...state,
+        isLoading: false,
+        error: action.payload,
+      };
+    case "ASSIGN_ROUTE_START":
+      return { ...state, isLoading: true, error: null };
     case "ASSIGN_ROUTE_FAILURE":
       return {
         ...state,
@@ -83,18 +78,6 @@ const shipmentReducer = (
         error: null,
       };
 
-    case "FETCH_ROUTES_SUCCESS":
-      return {
-        ...state,
-        routes: action.payload,
-      };
-
-    case "FETCH_TRANSPORTERS_SUCCESS":
-      return {
-        ...state,
-        transporters: action.payload,
-      };
-
     case "CLEAR_ERROR":
       return { ...state, error: null };
 
@@ -102,5 +85,3 @@ const shipmentReducer = (
       return state;
   }
 };
-
-export default shipmentReducer;

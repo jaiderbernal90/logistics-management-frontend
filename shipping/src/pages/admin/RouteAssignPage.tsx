@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useNavigate, Link, useParams } from 'react-router-dom';
 import { isAdmin, isAuthenticated } from '../../services/authService';
 import RouteAssignmentAdmin from '../../components/shipment/admin/AssignRoutes';
+import { Button, Flex } from 'antd';
 
 const RouteAssignPage = () => {
   const navigate = useNavigate();
@@ -35,19 +36,11 @@ const RouteAssignPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto">
-        <header className="mb-8 flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Asignar Ruta</h1>
-            <p className="mt-2 text-sm text-gray-600">
-              Asigna una ruta y transportista al envío seleccionado
-            </p>
-          </div>
-          <Link to="/shipping" className="btn-secondary">
-            Volver a la lista
-          </Link>
-        </header>
+        <Flex justify='flex-start' className='mb-6 text-left'>
+          <Button type="link" onClick={() => navigate('/admin/shipments')}>Volver</Button>
+        </Flex>
 
         <RouteAssignmentAdmin shipmentId={parseInt(shipmentId)} />
       </div>

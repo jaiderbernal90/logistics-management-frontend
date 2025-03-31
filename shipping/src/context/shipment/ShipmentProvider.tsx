@@ -1,10 +1,10 @@
 import { ReactNode, useCallback, useReducer } from "react";
 import ShipmentContext, { ShipmentContextType } from "./ShipmentContext";
-import shipmentReducer, { initialState } from "./ShipmentReducer";
-import { extractErrorMessage } from "../utils/errorHandler";
-import { NewShipmentData, RouteAssignmentData, Shipment, ShipmentState } from "../interfaces/shipment.interface";
-import * as shipmentService from "../services/shipmentService";
-import * as routeService from "../services/routeService";
+import { extractErrorMessage } from "../../utils/errorHandler";
+import * as shipmentService from "../../services/shipmentService";
+import { initialState, shipmentReducer } from "./ShipmentReducer";
+import { NewShipmentData, Shipment, ShipmentState } from "../../interfaces/shipment.interface";
+import { RouteAssignmentData } from "../../interfaces/route.interface";
 
 export const ShipmentProvider = ({ children }: { children: ReactNode }) => {
     const [state, dispatch] = useReducer(shipmentReducer, initialState);
@@ -13,7 +13,7 @@ export const ShipmentProvider = ({ children }: { children: ReactNode }) => {
         dispatch({ type: "FETCH_SHIPMENTS_START" });
 
         try {
-            const { data } = await shipmentService.getShipments();
+            const { data } = await shipmentService.getMyShipments();
 
             dispatch({
                 type: "FETCH_SHIPMENTS_SUCCESS",
@@ -42,42 +42,6 @@ export const ShipmentProvider = ({ children }: { children: ReactNode }) => {
             const errorMessage = extractErrorMessage(error);
             dispatch({
                 type: "FETCH_ALL_SHIPMENTS_FAILURE",
-                payload: errorMessage,
-            });
-        }
-    };
-
-    const fetchAllTransporters = async (): Promise<void> => {
-        dispatch({ type: "FETCH_TRANSPORTERS_START" });
-
-        try {
-            const { data } = await shipmentService.getAllTransporters();
-            dispatch({
-                type: "FETCH_TRANSPORTERS_SUCCESS",
-                payload: data.transporters,
-            });
-        } catch (error) {
-            const errorMessage = extractErrorMessage(error);
-            dispatch({
-                type: "FETCH_TRANSPORTERS_FAILURE",
-                payload: errorMessage,
-            });
-        }
-    };
-
-    const fetchAllRoutes = async (): Promise<void> => {
-        dispatch({ type: "FETCH_ROUTES_START" });
-
-        try {
-            const { data } = await shipmentService.getAllRoutes();
-            dispatch({
-                type: "FETCH_ROUTES_SUCCESS",
-                payload: data.routes,
-            });
-        } catch (error) {
-            const errorMessage = extractErrorMessage(error);
-            dispatch({
-                type: "FETCH_ROUTES_FAILURE",
                 payload: errorMessage,
             });
         }
@@ -159,30 +123,6 @@ export const ShipmentProvider = ({ children }: { children: ReactNode }) => {
         }
     };
 
-    const fetchRoutes = async (): Promise<void> => {
-        try {
-            const routes = await routeService.getRoutes();
-            dispatch({
-                type: "FETCH_ROUTES_SUCCESS",
-                payload: routes,
-            });
-        } catch (error) {
-            console.error("Error fetching routes:", error);
-        }
-    };
-
-    const fetchTransporters = async (): Promise<void> => {
-        try {
-            const transporters = await routeService.getTransporters();
-            dispatch({
-                type: "FETCH_TRANSPORTERS_SUCCESS",
-                payload: transporters,
-            });
-        } catch (error) {
-            console.error("Error fetching transporters:", error);
-        }
-    };
-
     const clearError = useCallback(() => {
         dispatch({ type: "CLEAR_ERROR" });
     }, []);
@@ -193,13 +133,9 @@ export const ShipmentProvider = ({ children }: { children: ReactNode }) => {
         createShipment,
         assignRoute,
         getShipmentById,
-        fetchRoutes,
-        fetchTransporters,
         clearError,
         fetchHistoryShipments,
         fetchAllShipments,
-        fetchAllTransporters,
-        fetchAllRoutes
     };
 
     return <ShipmentContext.Provider value={value}>{children}</ShipmentContext.Provider>;

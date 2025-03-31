@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Form,
@@ -10,11 +10,15 @@ import {
   Divider,
   Spin,
   Typography,
-  Space,
+  Row,
+  Col
 } from 'antd';
-import { ArrowRightOutlined, SendOutlined } from '@ant-design/icons';
+import { ArrowRightOutlined, SendOutlined, LoadingOutlined } from '@ant-design/icons';
+import { Transporter } from '../../../interfaces/transporter.interface';
+import { Route, RouteAssignmentData } from '../../../interfaces/route.interface';
 import { useShipment } from '../../../hook/useShipment';
-import { RouteAssignmentData } from '../../../interfaces/shipment.interface';
+import { useRoute } from '../../../hook/useRoute';
+import { useTransporter } from '../../../hook/useTransporter';
 
 const { Option } = Select;
 const { Title, Text } = Typography;
@@ -24,32 +28,35 @@ interface RouteAssignmentProps {
 }
 
 const RouteAssignmentAdmin: React.FC<RouteAssignmentProps> = ({ shipmentId }) => {
+
   const {
     assignRoute,
     state,
-    fetchAllTransporters,
-    fetchAllRoutes,
     getShipmentById
   } = useShipment();
+
+  const { fetchRoutes, state: stateRoute } = useRoute();
+  const { fetchTransporters, state: stateTransporter } = useTransporter();
 
   const {
     isLoading,
     error,
-    transporters,
-    routes,
     selectedShipment
   } = state;
+
+  const { routes } = stateRoute;
+  const { transporters } = stateTransporter;
 
   const navigate = useNavigate();
   const [form] = Form.useForm();
 
-  const [formSubmitted, setFormSubmitted] = useState(false);
-
   useEffect(() => {
-    fetchAllTransporters();
-    fetchAllRoutes();
-    getShipmentById(+shipmentId);
-  }, []);
+    if (shipmentId) {
+      fetchTransporters();
+      fetchRoutes();
+      getShipmentById(+shipmentId);
+    }
+  }, [shipmentId]);
 
   useEffect(() => {
     if (selectedShipment) {
@@ -61,8 +68,6 @@ const RouteAssignmentAdmin: React.FC<RouteAssignmentProps> = ({ shipmentId }) =>
   }, [selectedShipment, form]);
 
   const onFinish = async (values: any) => {
-    setFormSubmitted(true);
-
     const shipmentData: RouteAssignmentData = {
       shipment_id: +(shipmentId || 0),
       route_id: values.route_id,
@@ -77,149 +82,208 @@ const RouteAssignmentAdmin: React.FC<RouteAssignmentProps> = ({ shipmentId }) =>
 
   if (isLoading && !selectedShipment) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <Spin size="large" tip="Cargando información..." />
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <Spin indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />} />
       </div>
     );
   }
 
+  if (error) {
+    return (
+      <Alert
+        message="Error"
+        description={error}
+        type="error"
+        showIcon
+        style={{ maxWidth: '800px', margin: '50px auto' }}
+      />
+    );
+  }
+
+  if (!selectedShipment) {
+    return (
+      <Alert
+        message="No se encontró información"
+        description="No se encontró información para el envío solicitado."
+        type="info"
+        showIcon
+        style={{ maxWidth: '800px', margin: '50px auto' }}
+      />
+    );
+  }
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat('es-CO', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    }).format(date);
+  };
+
   return (
-    <Card className="w-full max-w-3xl mx-auto shadow-md">
-      <Title level={3} className="text-center mb-4">Asignar Ruta y Transportista</Title>
+    <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
+      <Title level={2}>Asignar Ruta y Transportista</Title>
+      <Text type="secondary">Envío: {selectedShipment.tracking_number}</Text>
 
-      {error && (
-        <Alert
-          message="Error"
-          description={error}
-          type="error"
-          showIcon
-          className="mb-4"
-        />
-      )}
+      <Row gutter={[24, 24]} style={{ marginTop: '24px' }}>
+        <Col xs={24} md={8}>
+          <Card title="Información del Envío" className="info-card">
+            <div style={{ marginBottom: '16px' }}>
+              <Text strong>Estado actual: </Text>
+              <Text>{selectedShipment.state}</Text>
+            </div>
 
-      {formSubmitted && form.getFieldsError().some(({ errors }) => errors.length) && (
-        <Alert
-          message="Error de validación"
-          description="Por favor corrige los errores en el formulario."
-          type="error"
-          showIcon
-          className="mb-4"
-        />
-      )}
+            <div style={{ marginBottom: '16px' }}>
+              <Text strong>Fecha de creación: </Text>
+              <Text>{formatDate((selectedShipment.date).toString())}</Text>
+            </div>
 
-      <Form
-        form={form}
-        layout="vertical"
-        requiredMark={false}
-        onFinish={onFinish}
-      >
-        <Divider orientation="left">Información del Envío</Divider>
-
-        {selectedShipment && (
-          <div className="bg-gray-50 p-4 rounded mb-6">
-            <Space direction="vertical" className="w-full">
-              <div className="flex justify-between">
-                <Text strong>Número de Rastreo:</Text>
-                <Text>{selectedShipment.tracking_number}</Text>
+            {selectedShipment.delivery_date && (
+              <div style={{ marginBottom: '16px' }}>
+                <Text strong>Fecha de entrega: </Text>
+                <Text>{formatDate((selectedShipment.delivery_date).toString())}</Text>
               </div>
-              <div className="flex justify-between">
-                <Text strong>Estado:</Text>
-                <Text>{selectedShipment.state}</Text>
+            )}
+
+            <Divider style={{ margin: '12px 0' }} />
+
+            <div style={{ marginBottom: '16px' }}>
+              <Text strong>Origen: </Text>
+              <Text>{selectedShipment.origin_address}</Text>
+            </div>
+
+            <div style={{ marginBottom: '16px' }}>
+              <Text strong>Destino: </Text>
+              <Text>{selectedShipment.destination_address}</Text>
+            </div>
+          </Card>
+
+          {selectedShipment.package && (
+            <Card title="Detalles del Paquete" style={{ marginTop: '24px' }} className="info-card">
+              <div style={{ marginBottom: '16px' }}>
+                <Text strong>Tipo de producto: </Text>
+                <Text>{selectedShipment.package.type_of_product}</Text>
               </div>
-              <div className="flex justify-between">
-                <Text strong>Fecha de Creación:</Text>
-                <Text>{new Date(selectedShipment.date).toLocaleDateString()}</Text>
+
+              <div style={{ marginBottom: '16px' }}>
+                <Text strong>Peso: </Text>
+                <Text>{selectedShipment.package.weight} kg</Text>
               </div>
-            </Space>
-          </div>
-        )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-          <Form.Item
-            name="origin_address"
-            label="Origen"
-          >
-            <Input
-              disabled
-              style={{ backgroundColor: '#f5f5f5' }}
-            />
-          </Form.Item>
+              <div style={{ marginBottom: '16px' }}>
+                <Text strong>Dimensiones: </Text>
+                <Text>{selectedShipment.package.size}</Text>
+              </div>
 
-          <Form.Item
-            name="destination_address"
-            label="Destino"
-          >
-            <Input
-              disabled
-              style={{ backgroundColor: '#f5f5f5' }}
-            />
-          </Form.Item>
-        </div>
+              <div style={{ marginBottom: '16px' }}>
+                <Text strong>Valor declarado: </Text>
+                <Text>${(selectedShipment.package.value).toLocaleString('es-CO')}</Text>
+              </div>
 
-        <Divider orientation="left">Asignación</Divider>
+              {selectedShipment.package.description && (
+                <div style={{ marginBottom: '16px' }}>
+                  <Text strong>Descripción: </Text>
+                  <Text>{selectedShipment.package.description}</Text>
+                </div>
+              )}
+            </Card>
+          )}
+        </Col>
 
-        <Form.Item
-          name="route_id"
-          label="Ruta"
-          rules={[{ required: true, message: 'Por favor selecciona una ruta' }]}
-        >
-          <Select
-            placeholder="Selecciona una ruta"
-            loading={isLoading}
-            disabled={isLoading}
-            showSearch
-            optionFilterProp="children"
-          >
-            {routes?.map(route => (
-              <Option key={route.id} value={route.id}>
-                {route.name} ({route.origin} <ArrowRightOutlined /> {route.destination})
-              </Option>
-            ))}
-          </Select>
-        </Form.Item>
-
-        <Form.Item
-          name="transporter_id"
-          label="Transportista"
-          rules={[{ required: true, message: 'Por favor selecciona un transportista' }]}
-        >
-          <Select
-            placeholder="Selecciona un transportista"
-            loading={isLoading}
-            disabled={isLoading}
-            showSearch
-            optionFilterProp="children"
-          >
-            {transporters?.map(transporter => (
-              <Option key={transporter.id} value={transporter.id}>
-                {transporter.name} {transporter.plate ? `- ${transporter.plate}` : ''}
-              </Option>
-            ))}
-          </Select>
-        </Form.Item>
-
-        <Form.Item className="mt-8">
-          <div className="flex gap-4">
-            <Button
-              onClick={() => navigate('/admin/shipments')}
-              disabled={isLoading}
-              className="flex-1"
+        <Col xs={24} md={16}>
+          <Card title="Asignación de Ruta y Transportista" className="assignment-card">
+            <Form
+              form={form}
+              layout="vertical"
+              requiredMark={false}
+              onFinish={onFinish}
             >
-              Cancelar
-            </Button>
-            <Button
-              type="primary"
-              htmlType="submit"
-              loading={isLoading}
-              className="flex-1"
-              icon={<SendOutlined />}
-            >
-              Asignar
-            </Button>
-          </div>
-        </Form.Item>
-      </Form>
-    </Card>
+              <Form.Item
+                name="origin_address"
+                label="Origen"
+              >
+                <Input
+                  disabled
+                  style={{ backgroundColor: '#f5f5f5' }}
+                />
+              </Form.Item>
+
+              <Form.Item
+                name="destination_address"
+                label="Destino"
+              >
+                <Input
+                  disabled
+                  style={{ backgroundColor: '#f5f5f5' }}
+                />
+              </Form.Item>
+
+              <Divider orientation="left">Seleccionar Asignación</Divider>
+
+              <Form.Item
+                name="route_id"
+                label="Ruta"
+                rules={[{ required: true, message: 'Por favor selecciona una ruta' }]}
+              >
+                <Select
+                  placeholder="Selecciona una ruta"
+                  loading={isLoading}
+                  disabled={isLoading}
+                  showSearch
+                  optionFilterProp="children"
+                >
+                  {routes?.map((route: Route) => (
+                    <Option key={route.id} value={route.id}>
+                      {route.name} ({route.origin} <ArrowRightOutlined /> {route.destination})
+                    </Option>
+                  ))}
+                </Select>
+              </Form.Item>
+
+              <Form.Item
+                name="transporter_id"
+                label="Transportista"
+                rules={[{ required: true, message: 'Por favor selecciona un transportista' }]}
+              >
+                <Select
+                  placeholder="Selecciona un transportista"
+                  loading={isLoading}
+                  disabled={isLoading}
+                  showSearch
+                  optionFilterProp="children"
+                >
+                  {transporters?.map((transporter: Transporter) => (
+                    <Option key={transporter.id} value={transporter.id}>
+                      {transporter.name} {transporter.plate ? `- ${transporter.plate}` : ''}
+                    </Option>
+                  ))}
+                </Select>
+              </Form.Item>
+
+              <div style={{ marginTop: '24px', display: 'flex', justifyContent: 'space-between' }}>
+                <Button
+                  onClick={() => navigate('/admin/shipments')}
+                  disabled={isLoading}
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  type="primary"
+                  htmlType="submit"
+                  loading={isLoading}
+                  icon={<SendOutlined />}
+                >
+                  Asignar Ruta
+                </Button>
+              </div>
+            </Form>
+          </Card>
+        </Col>
+      </Row>
+    </div>
   );
 };
 

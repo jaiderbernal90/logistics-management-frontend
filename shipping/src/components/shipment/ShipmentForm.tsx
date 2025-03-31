@@ -18,7 +18,7 @@ import { PACKAGE_SIZES, PRODUCT_TYPES } from '../../config/constants';
 const { TextArea } = Input;
 const { Option } = Select;
 
-const ShipmentForm = () => {
+export const ShipmentForm = () => {
   const { createShipment, state } = useShipment();
   const { isLoading, error } = state;
   const navigate = useNavigate();

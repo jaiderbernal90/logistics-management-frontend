@@ -1,7 +1,6 @@
 import './App.css';
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import './index.css';
-import ShipmentProvider from './context/ShipmentProvider';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import CreateShipmentPage from './pages/CreateShipmentPage';
 import ShipmentTrackingPage from './pages/ShipmenTrackingPage';
 import socketService from './services/socketService';
@@ -9,6 +8,8 @@ import { SOCKET_SERVER_URL } from './utils/socketConfigs';
 import { useEffect } from 'react';
 import ShipmentAdminListPage from './pages/admin/ShipmentAdminListPage';
 import RouteAssignPage from './pages/admin/RouteAssignPage';
+import Providers from './context/Providers';
+import ReportsPage from './pages/admin/ReportsPage';
 
 function App() {
 
@@ -24,15 +25,15 @@ function App() {
 
   return (
     <BrowserRouter>
-      <ShipmentProvider>
+      <Providers>
         <Routes>
-          <Route path="/admin/shipments" element={<ShipmentAdminListPage />} />
           <Route path="/create-shipment" element={<CreateShipmentPage />} />
-          {/* <Route path="/shipping/:id" element={<ShipmentDetailsPage />} /> */}
           <Route path="/track-shipment/:trackingNumber" element={<ShipmentTrackingPage />} />
           <Route path="/admin/shipments/routes" element={<RouteAssignPage />} />
+          <Route path="/admin/shipments" element={<ShipmentAdminListPage />} />
+          <Route path="/admin/reports" element={<ReportsPage />} />
         </Routes>
-      </ShipmentProvider>
+      </Providers>
     </BrowserRouter>
   );
 }

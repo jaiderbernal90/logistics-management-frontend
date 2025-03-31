@@ -5,7 +5,7 @@ import { Button, Flex, Spin, Table, TableProps, Tag } from "antd";
 import { useNavigate } from 'react-router-dom';
 import { getStatusColor } from '../../utils/functions';
 
-const ShipmentList = () => {
+export const ShipmentList = () => {
     const { state, fetchShipments } = useShipment();
     const { shipments, isLoading } = state;
     const navigate = useNavigate();

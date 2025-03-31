@@ -16,10 +16,10 @@ declare module "auth/AuthProvider" {
   export default AuthProvider;
 }
 
-declare module "shipping/ShipmentProvider" {
+declare module "shipping/ShipmentAppProvider" {
   import React from "react";
-  const ShipmentProvider: React.ComponentType<{ children: React.ReactNode }>;
-  export default ShipmentProvider;
+  const ShipmentAppProvider: React.ComponentType<{ children: React.ReactNode }>;
+  export default ShipmentAppProvider;
 }
 
 declare module "shipping/ShipmentAdminListPage" {
@@ -33,6 +33,13 @@ declare module "shipping/RouteAssignPage" {
   const RouteAssignPage: React.ComponentType<{ children: React.ReactNode }>;
   export default RouteAssignPage;
 }
+
+declare module "shipping/ReportAdminPage" {
+  import React from "react";
+  const ReportAdminPage: React.ComponentType<{ children: React.ReactNode }>;
+  export default ReportAdminPage;
+}
+
 declare module "shipping/ShipmentTrackingPage" {
   import React from "react";
   const ShipmentTrackingPage: React.ComponentType<{ children: React.ReactNode }>;

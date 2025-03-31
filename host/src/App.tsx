@@ -8,9 +8,10 @@ const AuthProvider = lazy(() => import('auth/AuthProvider'));
 const ShipmentListPage = lazy(() => import('shipping/ShipmentListPage'));
 const CreateShipment = lazy(() => import('shipping/CreateShipmentPage'));
 const TrackShipment = lazy(() => import('shipping/ShipmentTrackingPage'));
-const ShipmentProvider = lazy(() => import('shipping/ShipmentProvider'));
+const ShipmentAppProvider = lazy(() => import('shipping/ShipmentAppProvider'));
 const ShipmentAdminListPage = lazy(() => import('shipping/ShipmentAdminListPage'));
 const RouteAssignPage = lazy(() => import('shipping/RouteAssignPage'));
+const ReportAdminPage = lazy(() => import('shipping/ReportAdminPage'));
 
 const Loading = () => (
     <div className="flex items-center justify-center h-screen">
@@ -23,12 +24,11 @@ const PrivateRoute = ({ element }: { element: React.ReactNode }) => {
     return isAuthenticated ? element : <Navigate to="/login" />;
 };
 
-// Componentes que necesitan providers específicos
 const ShippingComponent = ({ Component }: { Component: React.ComponentType<any> }) => (
     <Suspense fallback={<Loading />}>
-        <ShipmentProvider>
+        <ShipmentAppProvider>
             <Component />
-        </ShipmentProvider>
+        </ShipmentAppProvider>
     </Suspense>
 );
 
@@ -45,7 +45,7 @@ function App() {
 
     // Escuchar eventos de autenticación de los microfrontends
     useEffect(() => {
-        const handleLoginSuccess = (event: any) => {
+        const handleLoginSuccess = () => {
             setIsAuthenticated(true);
         };
 
@@ -103,6 +103,12 @@ function App() {
                             <Route path="admin/assign-route/:shipmentId" element={
                                 <PrivateRoute element={
                                     <ShippingComponent Component={RouteAssignPage} />
+                                } />
+                            } />
+
+                            <Route path="admin/reports" element={
+                                <PrivateRoute element={
+                                    <ShippingComponent Component={ReportAdminPage} />
                                 } />
                             } />
                         </Route>

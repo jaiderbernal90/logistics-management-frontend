@@ -20,7 +20,7 @@ const Header = () => {
             case "ADMIN":
                 setLinks([
                     { title: 'Envios', path: '/admin/shipments' },
-                    { title: 'Reportes', path: '/reports' },
+                    { title: 'Reportes', path: '/admin/reports' },
                 ]);
                 break;
             case "CUSTOMER":

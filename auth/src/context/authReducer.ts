@@ -1,8 +1,6 @@
-// context/authReducer.ts
 import { AuthState, User } from "../interfaces/auth";
 import { TOKEN_KEY } from "../config/constants";
 
-// Estado inicial
 export const initialState: AuthState = {
   isAuthenticated: !!localStorage.getItem(TOKEN_KEY),
   user: null,
@@ -11,7 +9,6 @@ export const initialState: AuthState = {
   error: null,
 };
 
-// Tipos de acciones
 type AuthAction =
   | { type: "AUTH_START" }
   | { type: "AUTH_SUCCESS"; payload: { token: string; user: User } }
@@ -20,7 +17,6 @@ type AuthAction =
   | { type: "SET_LOADING"; payload: boolean }
   | { type: "CLEAR_ERROR" };
 
-// Reducer
 const authReducer = (state: AuthState, action: AuthAction): AuthState => {
   switch (action.type) {
     case "AUTH_START":
